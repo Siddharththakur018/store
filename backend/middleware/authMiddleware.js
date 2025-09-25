@@ -31,4 +31,26 @@ const roleMiddleware = (roles) => {
     }
 }
 
-module.exports = { authMiddleware, roleMiddleware }
+const sellerApprovalStatus = async(req, res, next) => {
+    try {
+        if(req.user.role !== 'seller'){
+            res.status(404).json({message: "Not a Seller!"})
+        }
+
+        const seller = await Seller.findOne({user: req.user.id})
+        if(!seller){
+             return res.status(404).json({ message: "Seller profile not found" });
+        }
+
+        if(seller.status !== 'approved'){
+            return res.status(404).json({message: "Approval not given by admin"})
+        }
+
+        next();
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({message: error.message})
+    }
+}
+
+module.exports = { authMiddleware, roleMiddleware, sellerApprovalStatus }

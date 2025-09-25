@@ -1,4 +1,3 @@
-const mongoose = require('mongoose')
 const User = require('../model/authModel')
 const Seller = require('../model/sellerModel')
 const jwt = require('jsonwebtoken')
@@ -33,7 +32,7 @@ const registerSeller = async (req, res) => {
         return res.status(400).json({ message: "All fields are required" })
     }
 
-    const existingUser = await Seller.findOne({ email });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
         return res.status(409).json({ message: "Seller already exists!" })
     }

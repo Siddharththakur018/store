@@ -21,7 +21,9 @@ app.use('/', async(req, res) => {
     res.send('Server is running')
 })
 
-app.use('/api/auth', authRoutes)
+app.get('/', (req, res) => res.send("Server is running"))
+
+app.get('/api/auth', authRoutes)
 
 app.listen(process.env.PORT, async() => {
     try {
