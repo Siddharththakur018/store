@@ -36,7 +36,7 @@ const updateSellerProfile = async (req, res) => {
     }
 
     const updateSeller = await Seller.findByIdAndUpdate(
-      req.user.id,
+      { user: req.user.id },
       { shopName, mobileNumber, address },
       { new: true, runValidators: true }
     );
@@ -90,14 +90,14 @@ const createProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    const product = await Product.find.populate(
+    const product = await Product.find().populate(
       "seller",
       "shopName mobileNumber"
     );
     res.status(200).json({
       success: true,
-      count: products.length,
-      products,
+      count: product.length,
+      product,
     });
   } catch (error) {
     console.error(error);
@@ -130,7 +130,53 @@ const updateProduct = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    res.status(200).json(updatedProduct);
+    res.status(200).json(updateProduct);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const sellerId = req.user._id;
+
+    const product = await Product.findOne({ _id: productId, seller: sellerId });
+
+    if (!product) {
+      res.status(404).json({ message: "Product not found!" });
+    }
+
+    await product.deleteOne();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Product deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getProductBySeller = async (req, res) => {
+  try {
+    if (req.user.role !== "seller") {
+      res.status(404).json({ messgae: "Not a seller!" });
+    }
+
+    const seller = await Seller.findOne({ user: req.user._id });
+    if (!seller) {
+      res.status(404).json({ message: "Seller not found!" });
+    }
+
+    if (seller.status !== "approved") {
+      res.status(403).json({ message: "Not approved yet!" });
+    }
+
+    const products = await Product.find({ seller: seller._id });
+
+    res.status(200).json({ success: true, count: products.length, products });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
@@ -142,5 +188,7 @@ module.exports = {
   updateSellerProfile,
   createProduct,
   getAllProducts,
-  updateProduct
+  updateProduct,
+  deleteProduct,
+  getProductBySeller
 };
