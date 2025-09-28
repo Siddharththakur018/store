@@ -6,7 +6,7 @@ const sellerProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
     if (!user || user.role !== "seller") {
-      res.status(404).json({ message: "Not a seller!" });
+      return res.status(404).json({ message: "Not a seller!" });
     }
 
     const seller = await Seller.findOne({ user: user._id });
@@ -35,7 +35,7 @@ const updateSellerProfile = async (req, res) => {
       res.status(404).json({ message: "Not a seller!" });
     }
 
-    const updateSeller = await Seller.findByIdAndUpdate(
+    const updateSeller = await Seller.findOneAndUpdate(
       { user: req.user.id },
       { shopName, mobileNumber, address },
       { new: true, runValidators: true }
@@ -48,8 +48,8 @@ const updateSellerProfile = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      user: updateSeller,
-      seller: updateUser,
+      user: updateUser,
+      seller: updateSeller,
     });
   } catch (error) {
     console.error(error);
@@ -90,10 +90,10 @@ const createProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    const product = await Product.find().populate(
-      "seller",
-      "shopName mobileNumber"
-    );
+    const product = await Product.find()
+      .populate("seller", "shopName mobileNumber")
+      .where("seller.status")
+      .equals("approved");
     res.status(200).json({
       success: true,
       count: product.length,
@@ -116,10 +116,13 @@ const updateProduct = async (req, res) => {
     } = req.body;
 
     const productId = req.params.id;
-    const sellerId = req.user._id;
+    const seller = await Seller.findOne({ user: req.user._id });
+    if (!seller || seller.status !== "approved") {
+      return res.status(403).json({ message: "Not approved seller" });
+    }
 
     const updateProduct = await Product.findOneAndUpdate(
-      { _id: productId, seller: sellerId },
+      { _id: productId, seller: seller._id },
       {
         productName,
         productDesc,
@@ -140,12 +143,15 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
-    const sellerId = req.user._id;
+    const seller = await Seller.findOne({ user: req.user._id });
+    if (!seller || seller.status !== "approved") {
+      return res.status(403).json({ message: "Not approved seller" });
+    }
 
     const product = await Product.findOne({ _id: productId, seller: sellerId });
 
     if (!product) {
-      res.status(404).json({ message: "Product not found!" });
+      return res.status(404).json({ message: "Product not found!" });
     }
 
     await product.deleteOne();
@@ -162,21 +168,45 @@ const deleteProduct = async (req, res) => {
 const getProductBySeller = async (req, res) => {
   try {
     if (req.user.role !== "seller") {
-      res.status(404).json({ messgae: "Not a seller!" });
+      return res.status(404).json({ messgae: "Not a seller!" });
     }
 
     const seller = await Seller.findOne({ user: req.user._id });
     if (!seller) {
-      res.status(404).json({ message: "Seller not found!" });
+      return res.status(404).json({ message: "Seller not found!" });
     }
 
     if (seller.status !== "approved") {
-      res.status(403).json({ message: "Not approved yet!" });
+      return res.status(403).json({ message: "Not approved yet!" });
     }
 
     const products = await Product.find({ seller: seller._id });
 
     res.status(200).json({ success: true, count: products.length, products });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getProductById = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    const product = await Product.findById(productId).populate(
+      "seller",
+      "shopName status"
+    );
+
+    if (!product) {
+      return res.status(404).json("Product not Found!");
+    }
+
+    if (!product.seller || product.seller.status !== "approved") {
+      return res.status(403).json("Seller status not approved");
+    }
+
+    res.status(200).json({ success: true, product });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
@@ -190,5 +220,6 @@ module.exports = {
   getAllProducts,
   updateProduct,
   deleteProduct,
-  getProductBySeller
+  getProductBySeller,
+  getProductById,
 };
