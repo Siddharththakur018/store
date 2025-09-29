@@ -135,9 +135,27 @@ const addCartItems = async (req, res) => {
   }
 };
 
-const getCart = async(req, res) => {
+const getCart = async (req, res) => {
+  try {
+    const buyer = await Buyer.findOne({ user: req.user.id }).populate(
+      "cart.product",
+      "productName productPrice productCategory stockQuantity"
+    );
+
+    if (!buyer) {
+      res.status(404).json({ message: "Not a buyer" });
+    }
+
+    if (!buyer.cart || buyer.cart.length === 0) {
+      return res.status(200).json({ success: true, cart: [], total: 0 });
+    }
+
     
-}
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
   getProfile,
