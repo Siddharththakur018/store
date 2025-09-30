@@ -150,7 +150,59 @@ const getCart = async (req, res) => {
       return res.status(200).json({ success: true, cart: [], total: 0 });
     }
 
-    
+    const total = buyer.cart.reduce((acc, curr) => {
+      return acc + item.product.productPrice * item.quantity;
+    });
+
+    res.status(200).json({ success: true, cart: buyer.cart, total });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updateCart = async (req, res) => {
+  try {
+    const { productId, quantity } = req.body;
+
+    if (quantity < 1) {
+      res.status(400).json({ message: "Quantity must be at least 1" });
+    }
+
+    const buyer = await Buyer.findOne({ user: req.user.id }).populate(
+      "cart.product",
+      "productName productPrice stockQuantity"
+    );
+
+    if (!buyer) {
+      res.status(404).json("Buyer not found!");
+    }
+
+    if (!buyer.cart || buyer.cart.length === 0) {
+      res.status(404).json("Nothing to update");
+    }
+
+    const itemIndex = buyer.cart.findIndex(
+      (item) => item.product._id.toString() === productId
+    );
+
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: "Product not in cart" });
+    }
+
+    buyer.cart[itemIndex].quantity = quantity;
+
+    await buyer.save();
+
+    const total = buyer.cart.reduce((acc, item) => {
+      return acc + item.product.productPrice * quantity;
+    });
+
+    res.status(200).json({
+      success: true,
+      cart: buyer.cart,
+      total,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
@@ -163,4 +215,6 @@ module.exports = {
   getAllProducts,
   getProductById,
   addCartItems,
+  getCart,
+  updateCart,
 };
