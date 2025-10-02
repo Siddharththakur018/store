@@ -7,14 +7,14 @@ const getProfile = async (req, res) => {
     const user = await User.findById(req.user._id).select("-password");
 
     if (!user) {
-      res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     if (user.role !== "buyer") {
-      res.status(403).json({ message: "Not a buyer!" });
+      return res.status(403).json({ message: "Not a buyer!" });
     }
 
-    res.status(200).json({ successs: true, profile: user });
+    res.status(200).json({ success: true, profile: user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
@@ -34,7 +34,7 @@ const updateProfile = async (req, res) => {
     );
 
     if (!updateUser) {
-      res.status(403).json({ message: "User not found" });
+      return res.status(403).json({ message: "User not found" });
     }
 
     res.status(201).json({ success: true, updateUser: updateUser });
@@ -150,9 +150,9 @@ const getCart = async (req, res) => {
       return res.status(200).json({ success: true, cart: [], total: 0 });
     }
 
-    const total = buyer.cart.reduce((acc, curr) => {
+    const total = buyer.cart.reduce((acc, item) => {
       return acc + item.product.productPrice * item.quantity;
-    });
+    }, 0);
 
     res.status(200).json({ success: true, cart: buyer.cart, total });
   } catch (error) {
@@ -175,11 +175,11 @@ const updateCart = async (req, res) => {
     );
 
     if (!buyer) {
-      res.status(404).json("Buyer not found!");
+      return res.status(404).json("Buyer not found!");
     }
 
     if (!buyer.cart || buyer.cart.length === 0) {
-      res.status(404).json("Nothing to update");
+      return es.status(404).json("Nothing to update");
     }
 
     const itemIndex = buyer.cart.findIndex(
@@ -195,8 +195,8 @@ const updateCart = async (req, res) => {
     await buyer.save();
 
     const total = buyer.cart.reduce((acc, item) => {
-      return acc + item.product.productPrice * quantity;
-    });
+      return acc + item.product.productPrice * item.quantity;
+    }, 0);
 
     res.status(200).json({
       success: true,
@@ -209,6 +209,151 @@ const updateCart = async (req, res) => {
   }
 };
 
+const decrementItem = async (req, res) => {
+  try {
+    const { productId } = req.body;
+
+    const buyer = await Buyer.findOne({ user: req.user.id }).populate(
+      "cart.product",
+      "productName productPrice stockQuantity"
+    );
+
+    if (!buyer) {
+      return res.status(404).json({ message: "Buyer not found!" });
+    }
+
+    const itemIndex = buyer.cart.findIndex((item) => 
+      item.product._id.toString() === productId
+    );
+
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: "Product not in cart" });
+    }
+
+    if (buyer.cart[itemIndex].quantity > 1) {
+      buyer.cart[itemIndex].quantity -= 1;
+    } else {
+      buyer.cart.splice(itemIndex, 1);
+    }
+
+    await buyer.save();
+
+    const total = buyer.cart.reduce((acc, item) => {
+      return acc + item.product.productPrice * item.quantity;
+    }, 0);
+
+    res.status(200).json({
+      success: true,
+      cart: buyer.cart,
+      total,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const incrementItem = async (req, res) => {
+  try {
+    const { productId } = req.body;
+
+    const buyer = await Buyer.findOne({ user: req.user.id }).populate(
+      "cart.product",
+      "productName productPrice stockQuantity"
+    );
+
+    if (!buyer) {
+      return res.status(404).json({ message: "Buyer not found!" });
+    }
+
+    const itemIndex = buyer.cart.findIndex((item) => 
+      item.product._id.toString() === productId
+    );
+
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: "Product not in cart" });
+    }
+
+    if (buyer.cart[itemIndex].quantity <= 10) {
+      buyer.cart[itemIndex].quantity += 1;
+    } else {
+      buyer.cart.splice(itemIndex, 1);
+    }
+
+    await buyer.save();
+
+    const total = buyer.cart.reduce((acc, item) => {
+      return acc + item.product.productPrice * item.quantity;
+    }, 0);
+
+    res.status(200).json({
+      success: true,
+      cart: buyer.cart,
+      total,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    const buyer = await Buyer.findOne({ user: req.user.id });
+
+    if (!buyer) {
+      return res.status(404).json({ message: "Not a buyer!" });
+    }
+
+    const itemIndex = buyer.cart.findIndex(
+      (item) => item.product._id.toString() === productId
+    );
+
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: "Product not in cart!" });
+    }
+
+    buyer.cart.splice(itemIndex, 1);
+
+    await buyer.save();
+
+    res.status(200).json({ success: true, cart: buyer.cart });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const clearCart = async(req, res) => {
+  try {
+    const buyer = await Buyer.findOne({user: req.user.id})
+
+    if(!buyer){
+      return res.status(404).json({message: "Buyer not found!"})
+    }
+
+    buyer.cart = []
+
+    await buyer.save();
+
+    res.status(200).json({success: true, cart: buyer.cart})
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({message: error.message})
+  }
+}
+
+const addWishlist = async(req, res) => {
+  try {
+      
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({message: error.message})
+  }
+}
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -217,4 +362,8 @@ module.exports = {
   addCartItems,
   getCart,
   updateCart,
+  deleteProduct,
+  decrementItem,
+  incrementItem,
+  clearCart
 };
