@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "seller", "buyer"],
       default: "buyer",
     },
+    isNewCustomer: {
+      type: Boolean,
+      default: true
+    }
   },
   { timestamps: true }
 );

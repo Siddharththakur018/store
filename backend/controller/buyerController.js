@@ -345,14 +345,14 @@ const clearCart = async(req, res) => {
   }
 }
 
-const addWishlist = async(req, res) => {
-  try {
-      
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({message: error.message})
-  }
-}
+// const addWishlist = async(req, res) => {
+//   try {
+
+//   } catch (error) {
+//     console.error(error)
+//     res.status(500).json({message: error.message})
+//   }
+// }
 
 module.exports = {
   getProfile,
@@ -365,5 +365,6 @@ module.exports = {
   deleteProduct,
   decrementItem,
   incrementItem,
-  clearCart
+  clearCart,
+  // addWishlist
 };
