@@ -48,20 +48,26 @@ const updateProfile = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    const product = await Product.find()
-      .populate("seller", "shopName number address")
-      .where("seller.status", "approved");
+    const products = await Product.find().populate({
+      path: "seller",
+      select: "shopName number address status",
+      match: { status: "approved" }, // only approved sellers
+    });
+
+    // Remove products with no approved seller
+    const filteredProducts = products.filter(p => p.seller !== null);
 
     res.status(200).json({
       success: true,
-      count: product.length,
-      product,
+      count: filteredProducts.length,
+      product: filteredProducts,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 const getProductById = async (req, res) => {
   try {
@@ -222,8 +228,8 @@ const decrementItem = async (req, res) => {
       return res.status(404).json({ message: "Buyer not found!" });
     }
 
-    const itemIndex = buyer.cart.findIndex((item) => 
-      item.product._id.toString() === productId
+    const itemIndex = buyer.cart.findIndex(
+      (item) => item.product._id.toString() === productId
     );
 
     if (itemIndex === -1) {
@@ -266,8 +272,8 @@ const incrementItem = async (req, res) => {
       return res.status(404).json({ message: "Buyer not found!" });
     }
 
-    const itemIndex = buyer.cart.findIndex((item) => 
-      item.product._id.toString() === productId
+    const itemIndex = buyer.cart.findIndex(
+      (item) => item.product._id.toString() === productId
     );
 
     if (itemIndex === -1) {
@@ -326,24 +332,24 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-const clearCart = async(req, res) => {
+const clearCart = async (req, res) => {
   try {
-    const buyer = await Buyer.findOne({user: req.user.id})
+    const buyer = await Buyer.findOne({ user: req.user.id });
 
-    if(!buyer){
-      return res.status(404).json({message: "Buyer not found!"})
+    if (!buyer) {
+      return res.status(404).json({ message: "Buyer not found!" });
     }
 
-    buyer.cart = []
+    buyer.cart = [];
 
     await buyer.save();
 
-    res.status(200).json({success: true, cart: buyer.cart})
+    res.status(200).json({ success: true, cart: buyer.cart });
   } catch (error) {
-    console.error(error)
-    res.status(500).json({message: error.message})
+    console.error(error);
+    res.status(500).json({ message: error.message });
   }
-}
+};
 
 // const addWishlist = async(req, res) => {
 //   try {

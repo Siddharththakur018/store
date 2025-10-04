@@ -1,6 +1,7 @@
 const Seller = require("../model/sellerModel");
 const User = require("../model/authModel");
 const Product = require("../model/productModel");
+const mongoose = require('mongoose')
 
 const sellerProfile = async (req, res) => {
   try {
@@ -59,15 +60,21 @@ const updateSellerProfile = async (req, res) => {
 
 const createProduct = async (req, res) => {
   try {
+    console.log("Request received:", req.body);
+
     const seller = await Seller.findOne({ user: req.user.id });
+    console.log("Seller found:", seller);
 
     if (!seller) {
-      res.status(404).json({ message: "Seller profile not foumd!" });
+      console.log("Seller not found for user:", req.user.id);
+      return res.status(404).json({ message: "Seller profile not found!" });
     }
 
     if (seller.status !== "approved") {
-      res.status(403).json({ message: "Not approved" });
+      console.log("Seller not approved:", seller.status);
+      return res.status(403).json({ message: "Not approved" });
     }
+
     const newProduct = new Product({
       seller: seller._id,
       productName: req.body.productName,
@@ -75,29 +82,49 @@ const createProduct = async (req, res) => {
       productPrice: req.body.productPrice,
       productCategory: req.body.productCategory,
       stockQuantity: req.body.stockQuantity,
+      imageUrl: req.body.imageUrl,
     });
+
+    console.log("New product to save:", newProduct);
+
     await newProduct.save();
+
+    console.log("Product saved successfully:", newProduct);
+
     res.status(201).json({
       success: true,
       message: "Product created successfully",
       product: newProduct,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error creating product:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
+
 const getAllProducts = async (req, res) => {
   try {
-    const product = await Product.find()
-      .populate("seller", "shopName mobileNumber")
-      .where("seller.status")
-      .equals("approved");
+    // First, find all approved sellers
+    const approvedSellers = await mongoose.model('Seller').find(
+      { status: "approved" },
+      '_id'
+    );
+    
+    const approvedSellerIds = approvedSellers.map(seller => seller._id);
+
+    // Then find products from those sellers
+    const products = await Product.find({
+      seller: { $in: approvedSellerIds }
+    }).populate({
+      path: "seller",
+      select: "shopName mobileNumber address status",
+    });
+
     res.status(200).json({
       success: true,
-      count: product.length,
-      product,
+      count: products.length,
+      product: products,
     });
   } catch (error) {
     console.error(error);
@@ -129,6 +156,7 @@ const updateProduct = async (req, res) => {
         productPrice,
         productCategory,
         stockQuantity,
+        imageUrl: req.body.imageUrl, 
       },
       { new: true, runValidators: true }
     );

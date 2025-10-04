@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const authRoutes = require("./routes/authRoutes");
+const sellerRoutes = require("./routes/sellerRoutes")
 
 const app = express();
 app.use(cors());
@@ -19,13 +20,11 @@ mongoose
     console.log("Db error", err);
   });
 
-app.use("/", async (req, res) => {
-  res.send("Server is running");
-});
 
 app.get("/", (req, res) => res.send("Server is running"));
 
-app.get("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/seller", sellerRoutes)
 
 app.listen(process.env.PORT, async () => {
   try {

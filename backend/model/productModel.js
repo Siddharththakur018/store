@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const Seller = require("../model/sellerModel");
+const slugify = require("slugify");
+const crypto = require("crypto");
 
 const productSchema = mongoose.Schema(
   {
@@ -11,6 +12,10 @@ const productSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    slug: {
+      type: String,
+      unique: true,
+    },
     productDesc: {
       type: String,
       required: true,
@@ -21,15 +26,34 @@ const productSchema = mongoose.Schema(
     },
     productCategory: {
       type: String,
-      enum: ["electronics", "clothing", "books", "furniture"],
+      enum: ["electronics", "clothing", "books", "furniture", "kitchen"],
       required: true,
     },
     stockQuantity: {
       type: Number,
       required: true,
     },
+    imageUrl: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
+
+// Generate a slug with a short random string to ensure uniqueness
+function generateUniqueSlug(name) {
+  const baseSlug = slugify(name, { lower: true, strict: true });
+  const uniqueString = crypto.randomBytes(3).toString("hex"); // 6 chars
+  return `${baseSlug}-${uniqueString}`;
+}
+
+// Pre-save hook
+productSchema.pre("save", function (next) {
+  if (this.isModified("productName")) {
+    this.slug = generateUniqueSlug(this.productName);
+  }
+  next();
+});
 
 module.exports = mongoose.model("Product", productSchema);
