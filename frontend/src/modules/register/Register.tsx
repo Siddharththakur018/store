@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { VscEye, VscEyeClosed } from "react-icons/vsc";
+import { Link } from "react-router-dom";
+import { FcGoogle } from "react-icons/fc";
 
 interface RegisterProps {
-  switchToLogin: () => void;
+  switchToRegister: () => void;
 }
 
-const Register: React.FC<RegisterProps> = ({ switchToLogin }) => {
+const Register: React.FC<RegisterProps> = ({ switchToRegister }) => {
   const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -32,7 +34,7 @@ const Register: React.FC<RegisterProps> = ({ switchToLogin }) => {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-6">
       <div className="text-4xl font-bold text-center">
         <span className="text-green-500">thakur</span>cart
         <span className="text-green-500">.</span>
@@ -79,10 +81,13 @@ const Register: React.FC<RegisterProps> = ({ switchToLogin }) => {
           onClick={() => setShowPassword(!showPassword)}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
         >
-          {showPassword ? <VscEye size={20} /> : <VscEyeClosed size={20} />}
+          {showPassword ? (
+            <VscEye className="cursor-pointer" size={20} />
+          ) : (
+            <VscEyeClosed className="cursor-pointer" size={20} />
+          )}
         </button>
       </div>
-
       {password && (
         <div className="text-sm mt-1">
           <span
@@ -109,6 +114,30 @@ const Register: React.FC<RegisterProps> = ({ switchToLogin }) => {
           </div>
         </div>
       )}
+      <button className="w-full  mt-5 bg-gray-900 text-white p-3 rounded-md cursor-pointer">
+        Sign Up
+      </button>
+      <p className="text-center mt-3 text-sm text-gray-400">
+        Already have an account?{" "}
+        <Link to="/login-page" className="text-blue-600 cursor-pointer">
+          Log In
+        </Link>
+      </p>
+
+      <div className=" flex items-center justify-center mt-2">
+        <div className="border w-30 mr-4 text-gray-400"></div>
+        <div>or</div>
+        <div className="ml-4 border w-30 text-gray-400"></div>
+      </div>
+
+      <button className="w-full flex justify-center items-center gap-4 mt-5 shadow-md p-3 rounded-md cursor-pointer">
+        <FcGoogle size={20} /> Sign Up with Google
+      </button>
+
+      <p className="text-center mt-5 text-sm text-gray-400">
+        By signing up to create an account I accept Company's <span className="text-blue-600">Terms of Use and Privacy Policy</span>
+      </p>
+
     </div>
   );
 };
