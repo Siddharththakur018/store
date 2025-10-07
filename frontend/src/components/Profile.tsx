@@ -24,8 +24,13 @@ const Profile: React.FC = () => {
       />
 
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-        {modalType === "login" && <Login switchToLogin={switchToLogin} />}
-        {modalType === "register" && <Register switchToRegister={switchToRegister} />}
+        {modalType === "login" && (
+          <Login
+            closeModal={() => setIsOpen(false)}
+            switchToRegister={switchToRegister}
+          />
+        )}
+        {modalType === "register" && <Register switchToLogin={switchToLogin} />}
       </Modal>
     </div>
   );

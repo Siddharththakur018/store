@@ -1,18 +1,35 @@
 import React, { useState } from "react";
 import { VscEye, VscEyeClosed } from "react-icons/vsc";
-import { Link } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
+import axios from "axios";
 
 interface RegisterProps {
-  switchToRegister: () => void;
+  switchToLogin: () => void;
 }
 
-const Register: React.FC<RegisterProps> = ({ switchToRegister }) => {
+const Register: React.FC<RegisterProps> = ({ switchToLogin }) => {
   const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [passwordStrength, setPasswordStrength] = useState("");
+
+  const registerUser = async () => {
+    const payload = {
+      name,
+      email,
+      password,
+    };
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
+        payload
+      );
+      switchToLogin()
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const checkPasswordStrength = (pass: string) => {
     let strength = 0;
@@ -114,14 +131,14 @@ const Register: React.FC<RegisterProps> = ({ switchToRegister }) => {
           </div>
         </div>
       )}
-      <button className="w-full  mt-5 bg-gray-900 text-white p-3 rounded-md cursor-pointer">
+      <button onClick={registerUser} className="w-full  mt-5 bg-gray-900 text-white p-3 rounded-md cursor-pointer">
         Sign Up
       </button>
       <p className="text-center mt-3 text-sm text-gray-400">
         Already have an account?{" "}
-        <Link to="/login-page" className="text-blue-600 cursor-pointer">
+        <span onClick={switchToLogin} className="text-blue-600 cursor-pointer">
           Log In
-        </Link>
+        </span>
       </p>
 
       <div className=" flex items-center justify-center mt-2">
@@ -135,9 +152,9 @@ const Register: React.FC<RegisterProps> = ({ switchToRegister }) => {
       </button>
 
       <p className="text-center mt-5 text-sm text-gray-400">
-        By signing up to create an account I accept Company's <span className="text-blue-600">Terms of Use and Privacy Policy</span>
+        By signing up to create an account I accept Company's{" "}
+        <span className="text-blue-600">Terms of Use and Privacy Policy</span>
       </p>
-
     </div>
   );
 };
