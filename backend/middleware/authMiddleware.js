@@ -2,13 +2,11 @@ const jwt = require("jsonwebtoken");
 const Seller = require("../model/sellerModel");
 
 const authMiddleware = async (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader || !authHeader.startsWith("Bearer")) {
-    res.status(404).json({ message: "Token is missing!" });
-  }
-
-  const token = authHeader.split(" ")[1];
   try {
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ message: "Token is missing!" });
+    }
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
     req.user = decoded;
 
@@ -35,7 +33,7 @@ const roleMiddleware = (roles) => {
 const sellerApprovalStatus = async (req, res, next) => {
   try {
     if (req.user.role !== "seller") {
-      res.status(404).json({ message: "Not a Seller!" });
+      res.status(403).json({ message: "Not a Seller!" });
     }
 
     const seller = await Seller.findOne({ user: req.user.id });
@@ -44,7 +42,7 @@ const sellerApprovalStatus = async (req, res, next) => {
     }
 
     if (seller.status !== "approved") {
-      return res.status(404).json({ message: "Approval not given by admin" });
+      return res.status(403).json({ message: "Approval not given by admin" });
     }
 
     next();

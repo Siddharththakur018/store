@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { VscEye, VscEyeClosed } from "react-icons/vsc";
 import { FcGoogle } from "react-icons/fc";
 import axios from "axios";
+import { useUser } from "../../context/userContext";
 
 interface LoginProps {
   switchToRegister: () => void;
@@ -13,6 +14,8 @@ const Login: React.FC<LoginProps> = ({ switchToRegister, closeModal }) => {
   const [email, setEmail] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [passwordStrength, setPasswordStrength] = useState("");
+
+  const { setUser } = useUser();
 
   const checkPasswordStrength = (pass: string) => {
     let strength = 0;
@@ -41,11 +44,12 @@ const Login: React.FC<LoginProps> = ({ switchToRegister, closeModal }) => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/auth/login`,
-        payload
+        payload,
+        { withCredentials: true }
       );
       if (response.status === 200) {
-        console.log("Login successful!");
-        closeModal(); // closes the modal
+        setUser({ name: response.data.user?.name });
+        closeModal();
         setEmail("");
         setPassword("");
         setPasswordStrength("");
