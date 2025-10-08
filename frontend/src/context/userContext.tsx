@@ -6,7 +6,7 @@ import {
   useEffect,
 } from "react";
 
-type User = { name: string } | null;
+type User = { name: string; email?: string; } | null;
 
 interface useContextType {
   user: User;
@@ -24,9 +24,12 @@ export const UserProvider: React.FC<userProviderProps> = ({ children }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
-          credentials: "include", 
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/auth/me`,
+          {
+            credentials: "include",
+          }
+        );
 
         if (res.ok) {
           const data = await res.json();

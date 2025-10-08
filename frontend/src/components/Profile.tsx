@@ -8,7 +8,7 @@ import { useUser } from "../context/userContext";
 const Profile: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [modalType, setModalType] = useState<"login" | "register">("register");
-  const [showProfileBox, setShowProfileBox] = useState(false); 
+  const [showProfileBox, setShowProfileBox] = useState(false);
 
   const { user, setUser } = useUser();
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "";
