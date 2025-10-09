@@ -5,7 +5,7 @@ import { FaLongArrowAltRight } from "react-icons/fa";
 
 const Carousel = () => {
   return (
-    <div className="w-[1300px] mx-auto mt-10">
+    <div className="mx-auto flex justify-center items-center mt-10">
       <div className="flex items-center gap-8">
         {/* LEFT CARD */}
         <div className="flex gap-2 rounded-4xl h-[480px] items-center p-4 bg-green-200">

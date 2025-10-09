@@ -6,7 +6,7 @@ import {
   useEffect,
 } from "react";
 
-type User = { name: string; email?: string; } | null;
+type User = { name: string; email: string; } | null;
 
 interface useContextType {
   user: User;

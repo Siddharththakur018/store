@@ -1,5 +1,6 @@
 import Navbar from '../components/Navbar'
 import Carousel from '../components/Carousel'
+import TagCarousel from '../modules/categoryCarousel/TagCarousel'
 
 const Home = () => {
   return (
@@ -10,6 +11,9 @@ const Home = () => {
             </div>
             <div>
               <Carousel />
+            </div>
+            <div>
+              <TagCarousel />
             </div>
         </div>
     </>

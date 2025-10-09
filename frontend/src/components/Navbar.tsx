@@ -11,7 +11,7 @@ const Navbar = () => {
             </div>
             <div className='flex w-72 justify-around'>
                  <Link to='/' className='cursor-pointer'>Home</Link>
-                <Link to='/' className='cursor-pointer'>Shop</Link>
+                <Link to='/shop' className='cursor-pointer'>Shop</Link>
                 <Link to='/' className='cursor-pointer'>About</Link>
                 <Link to='/' className='cursor-pointer'>Contact</Link>
             </div>

@@ -71,7 +71,7 @@ const Profile: React.FC = () => {
           <hr className="my-2" />
           <button
             onClick={handleLogout}
-            className="text-red-600 hover:text-red-800 text-sm font-medium text-left w-full"
+            className="text-red-600 hover:text-red-800 text-sm font-medium text-left w-full cursor-pointer"
           >
             Logout
           </button>

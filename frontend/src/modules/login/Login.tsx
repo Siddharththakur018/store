@@ -48,7 +48,10 @@ const Login: React.FC<LoginProps> = ({ switchToRegister, closeModal }) => {
         { withCredentials: true }
       );
       if (response.status === 200) {
-        setUser({ name: response.data.user?.name });
+        setUser({
+          name: response.data.user?.name,
+          email: response.data.user?.email,
+        });
         closeModal();
         setEmail("");
         setPassword("");

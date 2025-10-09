@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const cookieParser = require('cookie-parser')
 const authRoutes = require("./routes/authRoutes");
 const sellerRoutes = require("./routes/sellerRoutes")
+const categoryRoutes = require("./routes/categoryRoutes")
 
 const app = express();
 app.use(
@@ -32,6 +33,7 @@ app.get("/", (req, res) => res.send("Server is running"));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/seller", sellerRoutes)
+app.use("/api/category", categoryRoutes)
 
 app.listen(process.env.PORT, async () => {
   try {
