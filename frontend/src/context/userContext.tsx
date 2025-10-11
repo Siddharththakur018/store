@@ -1,12 +1,7 @@
-import {
-  createContext,
-  useState,
-  useContext,
-  type ReactNode,
-  useEffect,
-} from "react";
+import { createContext, useState, useContext, type ReactNode, useEffect } from "react";
+import axios from "axios";
 
-type User = { name: string; email: string; } | null;
+type User = { name: string; email: string } | null;
 
 interface useContextType {
   user: User;
@@ -21,30 +16,21 @@ interface userProviderProps {
 
 export const UserProvider: React.FC<userProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User>(null);
+
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/auth/me`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error(error);
+    axios
+      .get(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
+        withCredentials: true, // <-- send cookies
+      })
+      .then((res) => {
+        setUser(res.data.user || null);
+      })
+      .catch((err) => {
+        console.error(err);
         setUser(null);
-      }
-    };
-
-    fetchUser();
+      });
   }, []);
+
   return (
     <userContext.Provider value={{ user, setUser }}>
       {children}

@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const TagCarousel = () => {
   const [category, setCategory] = useState<string[]>([]);
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const getAllCategory = async () => {
     const response = await axios.get(
@@ -18,15 +19,15 @@ const TagCarousel = () => {
   }, []);
 
   return (
-    <div className="overflow-hidden w-full flex justify-center items-center mx-auto py-8">
+    <div className="overflow-hidden w-full">
       <div
         className="flex gap-5 whitespace-nowrap animate-scroll"
-        style={{ animation: `scroll 20s linear infinite` }}
+        ref={containerRef}
       >
-        {/* Duplicate the array for seamless infinite scroll */}
-        {[...category, ...category].map((item) => (
+        {/* Repeat enough times to fill container and make seamless scroll */}
+        {[...category, ...category].map((item, index) => (
           <div
-            key={item}
+            key={`${item}-${index}`}
             onClick={() => navigate(`/category/${item}`)}
             className="shadow-md p-4 bg-gray-200 rounded-md cursor-pointer"
           >
@@ -37,13 +38,14 @@ const TagCarousel = () => {
 
       <style>
         {`
+          .animate-scroll {
+            display: flex;
+            animation: scroll 20s linear infinite;
+          }
+
           @keyframes scroll {
-            0% {
-              transform: translateX(0%);
-            }
-            100% {
-              transform: translateX(-50%);
-            }
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); } /* scroll width of one set */
           }
         `}
       </style>
